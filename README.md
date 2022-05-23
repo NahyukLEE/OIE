@@ -39,7 +39,7 @@ Nahyuk will provide some action items for each week after weekly meetings with P
 #### Week0 (May 20 FRI ~ May 22 SUN)
 - Nahyuk: Dataset Creation with [NYC 3D Model](https://www1.nyc.gov/site/planning/data-maps/open-data/dwn-nyc-3d-model-download.page) using Blender.
   - Create both 360-images-dataset and fov-images-dataset and compare estimation models(VGG/ResNet)' results. (with Deadline ~Week1)
-- Sejin: Review some papers which have quite similar objecttive to ours.
+- Sejin: Review some papers which have quite similar objective to ours.
   - _"Deep Outdoor Illumination Estimation", CVPR 2017_, https://arxiv.org/abs/1611.06403 (with Deadline ~Week0)
   - _"All-Weather Deep Outdoor Lighting Estimation", CVPR 2019_, https://arxiv.org/abs/1906.04909 (with Deadline ~Week1)
 #### Week1 (May 22 MON ~ May 29 SUN)
