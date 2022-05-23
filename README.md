@@ -31,6 +31,8 @@ git checkout -b nahyuklee/{MODULE}
 # Do some commits on the "nahyuklee/{MODULE}" branch.
 # Then, open a pull request to merge the branch into the main branch.
 ```
+## Dataset Creation
+You can see detail instructions for dataset creation(using Blender) in this [MD](./DATA.md).
 
 ## Action Items
 Nahyuk will provide some action items for each week after weekly meetings with Prof. Hong.
