@@ -33,10 +33,3 @@ git checkout -b nahyuklee/{MODULE}
 ```
 ## Dataset Creation
 You can see detail instructions for dataset creation(using Blender) in this [MD](./DATA.md).
-
-## Action Items
-Nahyuk will provide some action items for each week after weekly meetings with Prof. Hong.
-
-#### Week1 (28 Jun. TUE ~ 1 Jul. FRI)
-- Nahyuk: RGB + Intrinsic images(360 HDR) dataset creation using *Blender*
-- Sejin: Paper review(Deep Outdoor Illumination Estimation(CVPR 2017 oral))
