@@ -1,4 +1,4 @@
-# Outdoor-Illumination-Estimation
+# OIE: Outdoor-Illumination-Estimation
 
 A research project on outdoor illumination estimating methods.
 
