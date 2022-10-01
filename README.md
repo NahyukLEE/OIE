@@ -1,6 +1,6 @@
 # OIE: Outdoor-Illumination-Estimation from Intrinsic Decomposition
 
-A research project on outdoor illumination estimating methods.
+A research project(for my B.S. Thesis) on outdoor illumination estimating methods.
 
 ## Installation
 This repository will be developed and tested on **Ubuntu 18.04 LTS**.
