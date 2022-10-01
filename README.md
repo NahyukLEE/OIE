@@ -1,4 +1,4 @@
-# OIE: Outdoor-Illumination-Estimation
+# OIE: Outdoor-Illumination-Estimation from Intrinsic Decomposition
 
 A research project on outdoor illumination estimating methods.
 
