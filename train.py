@@ -1,7 +1,7 @@
 import os 
 import torch
 
-from models.model import BaseUNet
+from models.main_model import BaseUNet
 
 # configs
 learning_rate = 1e-3
