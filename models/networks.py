@@ -155,7 +155,7 @@ class FCRegressor(nn.Module):
     - output: lighting parameters
     '''
     def __init__(self, in_channels=1024):
-        super(FullyConnectedLayer, self).__init__()
+        super(FCRegressor, self).__init__()
 
         self.linear1 = nn.Linear(in_channels, 512)
         self.linear2 = nn.Linear(512, 256)
