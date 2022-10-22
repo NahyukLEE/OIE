@@ -14,7 +14,7 @@ class MultiOutputUNet(nn.Module):
     - outputs: attention, albedo, shading 
     '''
     def __init__(self):
-        super(UNet, self).__init__()
+        super(MultiOutputUNet, self).__init__()
 
         # Conv-Batchnorm-Relu
         def CBR2d(in_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=True): 
