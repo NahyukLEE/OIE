@@ -3,6 +3,7 @@ import numpy as np
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from models.DANet import PositionAttentionModule, ChannelAttentionModule, DAAttention
 
@@ -152,20 +153,24 @@ class FCRegressor(nn.Module):
     '''
     Fully Connected Layer for Lighting Regression
     - input: attention feature vector
-    - output: lighting parameters
+    - output: sky distribution, sky & light parameters
     '''
     def __init__(self, in_channels=1024):
         super(FCRegressor, self).__init__()
 
-        self.linear1 = nn.Linear(in_channels, 512)
-        self.linear2 = nn.Linear(512, 256)
-        self.linear3 = nn.Linear(256, 128)
-        self.linear4 = nn.Linear(256, 4)
+        self.linear = nn.Linear(in_channels, 512)
+        self.fc_bn = nn.BatchNorm1d(2048)
+
+        ''' two heads regression'''
+        self.ds_fc = nn.Linear(512, 256)
+        self.ds_bn = nn.BatchNorm1d(256)
+        self.pr_fc = nn.Linear(512, 4)
+        self.pr_bn = nn.BatchNorm1d(4)
 
     def forward(self, x):
-        x = self.linear1(x)
-        x = self.linear2(x)
-        x = self.linear3(x)
-        x = self.linear4(x)
+        x = self.linear(x)
+        x = F.elu(self.fc_bn(x))
 
-        return x
+        dist = F.log_softmax(self.ds_bn(self.ds_fc(x)), dim=1)
+        param = self.pr_bn(self.pr_fc(x))
+        return dist, param

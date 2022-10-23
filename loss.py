@@ -44,3 +44,14 @@ def intrinsic_loss(mask, pred_a, pred_s, gt_a, gt_s, gt_i):
     loss = w1 * albedo_loss +  w2 * shading_loss + (1-w1-w2) * reconstruction_loss
 
     return loss
+
+def light_loss(pred_dis, pred_prrs, label_dis, label_prrs, beta=0.1):
+    sun_crit = nn.KLDivLoss()
+    prr_crit = nn.MSELoss()
+    
+    sun_loss, prr_loss = sun_crit(pred_dis, label_dis), prr_crit(pred_prrs, label_prrs)
+    loss = sun_loss + beta * prr_loss
+    return loss
+
+def combine_loss(id_loss, le_loss, alpha=0.5):
+    return id_loss + alpha * le_loss

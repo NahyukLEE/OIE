@@ -4,6 +4,8 @@ import numpy as np
 
 class OutdoorIlluminationDataset(Dataset): 
 
+    # TODO: metadata loading part
+    
     def __init__(self, data_dir, transform=None):
         self.data_dir = data_dir
         self.transform = transform
