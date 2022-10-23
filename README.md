@@ -32,4 +32,4 @@ git checkout -b nahyuklee/{MODULE}
 # Then, open a pull request to merge the branch into the main branch.
 ```
 ## Dataset Creation
-You can see detail instructions for dataset creation(using Blender) in this [MD](./DATA.md).
+You can see detail instructions for dataset creation(using Blender) in this [MD](./docs/DATA.md).
