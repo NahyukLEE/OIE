@@ -74,7 +74,8 @@ class MultiOutputUNet(nn.Module):
         self.dec1_2 = CBR2d(in_channels=128, out_channels=64)
         self.dec1_1 = CBR2d(in_channels=64, out_channels=64)
 
-        self.fc = nn.Conv2d(in_channels=64, out_channels=2, kernel_size=1, stride=1, padding=0, bias=True)
+        self.fc = nn.Conv2d(in_channels=64, out_channels=3, kernel_size=1, stride=1, padding=0, bias=True)
+        self.relu = nn.ReLU()
 
     def forward(self, x):
         # Encoding
@@ -143,8 +144,8 @@ class MultiOutputUNet(nn.Module):
         dec1_1_a = self.dec1_1(dec1_2_a)
         dec1_1_s = self.dec1_1(dec1_2_s)
 
-        albedo = self.fc(dec1_1_a)
-        shading = self.fc(dec1_1_s)
+        albedo = self.relu(self.fc(dec1_1_a))
+        shading = self.relu(self.fc(dec1_1_s))
 
         return attention, albedo, shading
         
