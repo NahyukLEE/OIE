@@ -16,8 +16,8 @@ The position of the sun is determined based on the image pixel value.
 Edit - Preference - Add ons - open zip file
 
 ### Our python script
-Download python script.
-Go to Scripting Mode.
+Download python script. [here] (https://github.com/NahyukLEE/OIEID/blob/main/docs/rendering.py)
+
 
 
 ## Install Package
@@ -49,7 +49,12 @@ https://www.youtube.com/watch?v=gyRoY9QUNg0&t=171s
 
 You can download free assets including 'asset.blend' and 'textrue'.
 
-Go to Shading Mode in Blender and add texture to objects using node.
+If you can't see 'textures' , then use 'find missing files'. 
+
+
+---
+Actually, we use reconstructed object from https://vcc.tech/UrbanScene3D.
+
 
 ### Get HDRI
 poly haven https://polyhaven.com/
@@ -57,6 +62,9 @@ poly haven https://polyhaven.com/
 You can download free hdris.
 
 In Blender World Properties , select environment texture and upload HDRI.
+
+--- 
+Actually , we use LAVAL outdoor hdr data.
 
 
 ## Camera setting
@@ -68,6 +76,9 @@ Consider the physical elements and fps while making the animation.
 - distance(m) = speed(m/s) * time(s)
 - fps = frame(f) / time(s)
 
+--- 
+Actually, we use camera position get from https://vcc.tech/UrbanScene3D.
+
 ## Parameters
 
 You can set many parameters in Blender-properties or our python script.
@@ -78,8 +89,6 @@ In current our experiment , Mandatory parameters are
 - device = 'GPU'
 - type = 'PANO'
 - panorama_type = 'EQUIRECTANGULAR'
-- name = "your camera name"
-- path = "your path"
 
 In current our experiment , changeable parameters are
 
@@ -91,8 +100,21 @@ In current our experiment , changeable parameters are
 - frame_end = 200
 - file_format = 'PNG'
 
+Every parameter is set by python method.
+
+
+
 ## Run
 
+You should change 'model_name' and select camera which is used.
+
 Run the script , and go to Render Mode > rendering
+
+
+
+
+TBU : input camera parameter , laval hdr dataset  
+
+
 
 
