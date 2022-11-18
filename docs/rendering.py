@@ -18,8 +18,11 @@ bl_info = {   # add on
 
 
 
-model_name = "school"
+model_name = "purchase"
 
+
+
+path_name = './yonghee/oie/blender/model/'+model_name+'/data/'
 
 
 
@@ -40,10 +43,10 @@ def load_data(input_path):
 
 def save_data(params , output_path):
     
-    params.insert(0,'path_environment',list(output_path+'environment\\environment'+str(i).zfill(4)+ '.png' for i in range(bpy.context.scene.frame_end+1))) 
-    params.insert(0,'path_shading',list(output_path+'shading\\shading'+str(i).zfill(4)+ '.png' for i in range(bpy.context.scene.frame_end+1))) 
-    params.insert(0,'path_albedo',list(output_path+'albedo\\albedo'+str(i).zfill(4)+ '.png' for i in range(bpy.context.scene.frame_end+1))) 
-    params.insert(0,'path_original',list(output_path+'original\\original'+str(i).zfill(4)+ '.png' for i in range(bpy.context.scene.frame_end+1))) 
+    params.insert(0,'path_environment',list(output_path+'environment/environment'+str(i).zfill(4)+ '.png' for i in range(bpy.context.scene.frame_end+1))) 
+    params.insert(0,'path_shading',list(output_path+'shading/shading'+str(i).zfill(4)+ '.png' for i in range(bpy.context.scene.frame_end+1))) 
+    params.insert(0,'path_albedo',list(output_path+'albedo/albedo'+str(i).zfill(4)+ '.png' for i in range(bpy.context.scene.frame_end+1))) 
+    params.insert(0,'path_original',list(output_path+'original/original'+str(i).zfill(4)+ '.png' for i in range(bpy.context.scene.frame_end+1))) 
     
     
     
@@ -56,10 +59,14 @@ def settings():
  
     bpy.context.scene.render.engine = 'CYCLES'
     bpy.context.scene.cycles.device = 'GPU'
-    bpy.context.scene.cycles.samples = 16
-    #bpy.context.object.data.cycles.fisheye_fov = 6.28319
+    bpy.context.scene.cycles.samples = 64
     bpy.context.scene.render.fps = 1
+    bpy.context.scene.render.resolution_x = 4096
+    bpy.context.scene.render.resolution_y = 2160
+    bpy.context.scene.render.image_settings.color_mode = 'RGBA'
 
+
+    bpy.context.scene.use_nodes = True
 
     
     
@@ -67,11 +74,8 @@ def settings():
     
     bpy.context.object.data.type = 'PANO'
     bpy.context.object.data.cycles.panorama_type = 'EQUIRECTANGULAR'
-    #bpy.context.object.data.cycles.fisheye_lens = 5
     
-    
-    #bpy.context.object.name = "Camera.002"
-    
+
     
 
     bpy.context.scene.render.use_single_layer = True
@@ -114,6 +118,16 @@ def compositing(path):
         render_layers = nodes['Render Layers']
         mix_add = nodes.new('CompositorNodeMixRGB')
         mix_add.blend_type = 'ADD'
+        
+        math_grater = nodes.new('CompositorNodeMath')
+        math_grater.operation = 'GREATER_THAN'
+        math_grater.inputs[1].default_value = 0
+        
+        math_less = nodes.new('CompositorNodeMath')
+        math_less.operation = 'LESS_THAN'
+        math_less.inputs[1].default_value = 0.5
+ 
+
         output_file = nodes.new("CompositorNodeOutputFile")
 
         output_file.base_path = path
@@ -127,9 +141,17 @@ def compositing(path):
             render_layers.outputs['DiffInd'],
             mix_add.inputs[2]
         )
-  
-
+        scene.node_tree.links.new(
+            render_layers.outputs['Env'],
+            math_grater.inputs[0]
+        )
+        scene.node_tree.links.new(
+            math_grater.outputs['Value'],
+            math_less.inputs[0]
+        )
         
+        
+
         
         output_file.file_slots.remove(output_file.inputs[0])
         output_file.file_slots.new("original")
@@ -137,10 +159,10 @@ def compositing(path):
         output_file.file_slots.new("albedo")
         output_file.file_slots.new("environment")
         
-        output_file.file_slots[0].path = "original\\original"
-        output_file.file_slots[1].path = "shading\\shading"
-        output_file.file_slots[2].path = "albedo\\albedo"
-        output_file.file_slots[3].path = "environment\\environment"
+        output_file.file_slots[0].path = "original/original"
+        output_file.file_slots[1].path = "shading/shading"
+        output_file.file_slots[2].path = "albedo/albedo"
+        output_file.file_slots[3].path = "environment/environment"
         
         scene.node_tree.links.new(
             render_layers.outputs['Image'],
@@ -155,13 +177,12 @@ def compositing(path):
             output_file.inputs['albedo']
         )
         scene.node_tree.links.new(
-            render_layers.outputs['Env'],
+            math_less.outputs['Value'],
             output_file.inputs['environment']
         )
         
 def render_and_save(path, animation = False):
-    compositing(path)
-    
+
     
     if(animation==False):
         bpy.context.scene.render.image_settings.file_format = 'PNG'
@@ -173,7 +194,8 @@ def render_and_save(path, animation = False):
         
     
 
-    bpy.ops.render.render(use_viewport = True,write_still = True, animation = True)     
+    #bpy.ops.render.render(use_viewport = True,write_still = True, animation = True)  
+    bpy.ops.render.render(use_viewport = True,animation = True)   
     
     # original 
     #bpy.context.scene.render.filepath = path+'original\\'
@@ -237,12 +259,16 @@ def main(context):   # main
     settings()
     #animation(input_data)  scale different , so  frames different
     
+    params = extract_camera_params(frames = np.array(list(i for i in range(bpy.context.scene.frame_end+1))))
+    save_data(params, path_name)
     
-    render_and_save(path = 'D:\\oie\\blender\\'+model_name+'\\data\\',animation=False)
+    compositing(path = path_name)
+    
+    
+    render_and_save(path = path_name,animation=False)
     
 
-    params = extract_camera_params(frames = np.array(list(i for i in range(bpy.context.scene.frame_end+1))))
-    save_data(params, "D:\\oie\\blender\\"+model_name+"\\data\\")
+    
     
     
     
