@@ -54,7 +54,7 @@ If you can't see 'textures' , then use 'find missing files'.
 
 
 ---
-Actually, we use reconstructed object from https://vcc.tech/UrbanScene3D.
+Actually, we use scenecity addon from [http://www.cgchan.com/]
 
 
 ### Get HDRI
@@ -77,8 +77,7 @@ Consider the physical elements and fps while making the animation.
 - distance(m) = speed(m/s) * time(s)
 - fps = frame(f) / time(s)
 
---- 
-Actually, we use camera position get from https://vcc.tech/UrbanScene3D.
+
 
 ## Parameters
 
@@ -107,7 +106,7 @@ Every parameter is set by python method.
 
 ## Run
 
-You should change 'model_name' and select camera which is used.
+You should change 'model_name' , 'file_path' and select camera which is used.
 
 Run the script , and go to Render Mode > rendering
 
