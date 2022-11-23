@@ -2,7 +2,9 @@ import bpy
 import numpy as np
 import math
 import pandas as pd
-bl_info = {   # add on 
+import os
+# add on
+bl_info = {   
     "name": "Rendering",
     "author": "Yonghee Oh",
     "version": (1, 0),
@@ -14,44 +16,70 @@ bl_info = {   # add on
     "category": "Add Mesh",
 }
 
+# global variables
+pwd = '/home/cvar/yonghee/oie'
+model_name = "grid1"
+animation_end = 1
 
 
+os.chdir("/home/cvar/yonghee/oie")
+os.chdir("./exr")
+days = os.listdir(os.path.join(os.getcwd() , "LavalSkyDBenvmap"))
+times = list(range(0,len(days), 1))
+for day in range(len(days)) :
+    times[day] = os.listdir(os.path.join(os.path.join(os.getcwd() , "LavalSkyDBenvmap") , days[day]))
+
+exr_path_memory= []
+label_path_memory = []
+image_path_memory1 = [] 
+image_path_memory2 = []
+
+for i in range(len(days)):
+    for time in times[i]:
+        exr_path_memory.append( pwd+ '/exr/LavalSkyDBenvmap/'+days[i]+'/'+time+'/envmap.exr')
+        label_path_memory.append(  pwd+ "/exr/LavalSkyDBcsvday/" + days[i] )
+        image_path_memory1.append(pwd+'/model/'+model_name+'/'+model_name+'/'+days[i])
+        image_path_memory2.append(pwd+'/model/'+model_name+'/'+model_name+'/'+days[i]+'/'+time)
+        
+os.chdir("../")
 
 
-model_name = "purchase"
-
-
-
-path_name = './yonghee/oie/blender/model/'+model_name+'/data/'
-
-
-
-
+# make scene
 def modeling():
     pass 
+def load_data(input_path):
+    pass
 
-def environment_map():
+def animation(input_data):
     pass
 
 
+def environment_map(exr_path_memory):
+
+    image = bpy.data.images.load(filepath = exr_path_memory)
+    bpy.data.worlds["World"].node_tree.nodes["Environment Texture"].image = image
 
 
-    
-def load_data(input_path):
-    return pd.read_csv(input_path)
 
 
-def save_data(params , output_path):
-    
-    params.insert(0,'path_environment',list(output_path+'environment/environment'+str(i).zfill(4)+ '.png' for i in range(bpy.context.scene.frame_end+1))) 
-    params.insert(0,'path_shading',list(output_path+'shading/shading'+str(i).zfill(4)+ '.png' for i in range(bpy.context.scene.frame_end+1))) 
-    params.insert(0,'path_albedo',list(output_path+'albedo/albedo'+str(i).zfill(4)+ '.png' for i in range(bpy.context.scene.frame_end+1))) 
-    params.insert(0,'path_original',list(output_path+'original/original'+str(i).zfill(4)+ '.png' for i in range(bpy.context.scene.frame_end+1))) 
-    
-    
-    
-    params.to_csv(output_path+'output.csv' , index = False)
 
+
+def save_data(params ,image_path_memory1,image_path_memory2, exr_path_memory ):
+    
+    params.insert(0,'exr_path_memory',exr_path_memory) 
+    params.insert(0,'path_environment',list('../'+model_name+'/environment/environment'+str(i).zfill(4)+ '.png' for i in range(bpy.context.scene.frame_end+1))) 
+    params.insert(0,'path_shading',list('../'+model_name+'/shading/shading'+str(i).zfill(4)+ '.png' for i in range(bpy.context.scene.frame_end+1))) 
+    params.insert(0,'path_albedo',list('../'+model_name+'/albedo/albedo'+str(i).zfill(4)+ '.png' for i in range(bpy.context.scene.frame_end+1))) 
+    params.insert(0,'path_original',list('../'+model_name+'/original/original'+str(i).zfill(4)+ '.png' for i in range(bpy.context.scene.frame_end+1))) 
+    
+    os.makedirs(image_path_memory1, exist_ok =True)
+    os.mkdir(image_path_memory2)
+    #os.mkdir("./model/"+model_name+'/'+model_name)
+    #os.mkdir("./model/"+model_name+'/'+model_name+'/'+days[ch_env])
+    
+    
+    
+    params.to_csv(image_path_memory2+'/output.csv' , index = False)
 
 def settings():
     
@@ -59,15 +87,53 @@ def settings():
  
     bpy.context.scene.render.engine = 'CYCLES'
     bpy.context.scene.cycles.device = 'GPU'
-    bpy.context.scene.cycles.samples = 64
+    bpy.context.scene.cycles.samples = 1
     bpy.context.scene.render.fps = 1
-    bpy.context.scene.render.resolution_x = 4096
-    bpy.context.scene.render.resolution_y = 2160
-    bpy.context.scene.render.image_settings.color_mode = 'RGBA'
+    bpy.context.scene.render.resolution_x = 192  # will be changed
+    bpy.context.scene.render.resolution_y = 108  # will be changed
+    
+    
+    bpy.context.scene.cycles.max_bounces = 8
+    bpy.context.scene.cycles.diffuse_bounces = 4
+    bpy.context.scene.cycles.glossy_bounces = 6
+    bpy.context.scene.cycles.transmission_bounces = 8
+    bpy.context.scene.cycles.volume_bounces = 2
+    bpy.context.scene.cycles.transparent_max_bounces = 8
+    
+    bpy.context.scene.cycles.film_exposure = 1
+    
+    
+    
+    
+    # output properties
+    
+    bpy.context.scene.render.image_settings.color_mode = 'RGB'
+    bpy.context.scene.render.image_settings.color_depth = '8'
+    bpy.context.scene.render.image_settings.compression = 15
 
+    bpy.context.scene.render.use_compositing = True
+    bpy.context.scene.render.use_sequencer = True
+    
+    bpy.context.scene.render.use_overwrite = True
+    
+    
+    
+    # view layer properties 
+    bpy.context.scene.view_layers["ViewLayer"].use_pass_diffuse_direct = True
+    bpy.context.scene.view_layers["ViewLayer"].use_pass_diffuse_indirect = True
+    bpy.context.scene.view_layers["ViewLayer"].use_pass_diffuse_color = True
+    bpy.context.scene.view_layers["ViewLayer"].use_pass_environment = True
 
-    bpy.context.scene.use_nodes = True
-
+    bpy.context.scene.render.use_single_layer = True
+    
+    # world properties
+    
+    bpy.context.scene.world.cycles_visibility.camera = True
+    bpy.context.scene.world.cycles_visibility.diffuse = True
+    bpy.context.scene.world.cycles_visibility.glossy = True
+    bpy.context.scene.world.cycles_visibility.transmission = True
+    bpy.context.scene.world.cycles_visibility.scatter = True
+    
     
     
     # camera properties
@@ -75,47 +141,41 @@ def settings():
     bpy.context.object.data.type = 'PANO'
     bpy.context.object.data.cycles.panorama_type = 'EQUIRECTANGULAR'
     
+    bpy.context.object.data.cycles.latitude_min = -1.5708
+    bpy.context.object.data.cycles.latitude_max = 1.5708
+    bpy.context.object.data.cycles.longitude_min = -3.14159
+    bpy.context.object.data.cycles.longitude_max = 3.14159
+    bpy.context.object.data.shift_x = 0
+    bpy.context.object.data.shift_y = 0
+    bpy.context.object.data.clip_start = 0.01
+    bpy.context.object.data.clip_end = 10000
+    
+    
+    
+    # scene properties
+    bpy.context.scene.frame_current = 0
+    bpy.context.scene.frame_start = 0
+    bpy.context.scene.frame_end = animation_end
+
+
+
+
+
 
     
-
-    bpy.context.scene.render.use_single_layer = True
-    bpy.context.scene.render.use_overwrite = True
-    bpy.context.scene.render.use_compositing = True
+def compositing(image_path_memory2):
     
-    #bpy.context.scene.view_layers["View Layer"].use_pass_diffuse_direct = True
-    #bpy.context.scene.view_layers["View Layer"].use_pass_diffuse_indirect = True
-    #bpy.context.scene.view_layers["View Layer"].use_pass_diffuse_color = True
-    #bpy.context.scene.view_layers["View Layer"].use_pass_environment = True
 
+        nodesField = bpy.context.scene.node_tree
+        for currentNode in nodesField.nodes:
+            nodesField.nodes.remove(currentNode)
 
-    bpy.context.scene.world.cycles_visibility.camera = True
-    bpy.context.scene.world.cycles_visibility.diffuse = True
-    bpy.context.scene.world.cycles_visibility.glossy = True
-    bpy.context.scene.world.cycles_visibility.transmission = True
-    bpy.context.scene.world.cycles_visibility.scatter = True
-
-    bpy.context.scene.use_nodes = True
-
-#def animation(input_data):
-#    LRS = input_data
-#    for i  in range(LRS.shape[0]):
-#        #bpy.context.scene.frame_current = i*20
-#        bpy.context.object.location[0] = LRS.iloc[i,0]
-#        bpy.context.object.location[1] = LRS.iloc[i,1]
-#        bpy.context.object.location[2] = LRS.iloc[i,2]
-#        bpy.context.object.rotation_euler[0] = math.radians(int(LRS.iloc[i,3]))
-#        bpy.context.object.rotation_euler[1] = math.radians(int(LRS.iloc[i,4]))
-#        bpy.context.object.rotation_euler[2] = math.radians(int(LRS.iloc[i,5]))
-#        #bpy.ops.anim.keyframe_insert_by_name(type="LocRotScale")
-#        bpy.context.object.keyframe_insert(data_path='location', frame = i*20)
-#        bpy.context.object.keyframe_insert(data_path='rotation_euler', frame = i*20)
         
-    
-def compositing(path):
         scene = bpy.context.scene
         nodes = scene.node_tree.nodes
 
-        render_layers = nodes['Render Layers']
+        
+        render_layers =  nodes.new('CompositorNodeRLayers')
         mix_add = nodes.new('CompositorNodeMixRGB')
         mix_add.blend_type = 'ADD'
         
@@ -128,10 +188,11 @@ def compositing(path):
         math_less.inputs[1].default_value = 0.5
  
 
+        
         output_file = nodes.new("CompositorNodeOutputFile")
 
-        output_file.base_path = path
-
+        output_file.base_path = image_path_memory2 + '/'
+        
 
         scene.node_tree.links.new(
             render_layers.outputs['DiffDir'],
@@ -181,40 +242,31 @@ def compositing(path):
             output_file.inputs['environment']
         )
         
-def render_and_save(path, animation = False):
-
+        
+        
+        
+def render_and_save(animation = False ):
     
     if(animation==False):
         bpy.context.scene.render.image_settings.file_format = 'PNG'
    
     else :
         bpy.context.scene.render.image_settings.file_format = 'AVI_JPEG'
-        
-        
-        
+
+
+
+
+    bpy.ops.render.render(use_viewport = True,write_still = True, animation = True)     
     
 
-    #bpy.ops.render.render(use_viewport = True,write_still = True, animation = True)  
-    bpy.ops.render.render(use_viewport = True,animation = True)   
-    
-    # original 
-    #bpy.context.scene.render.filepath = path+'original\\'
-    #bpy.ops.render.render(use_viewport = True,write_still = True, animation = True) 
-    # albedo
-    #bpy.context.scene.render.filepath = path+'albedo\\'
-    #bpy.ops.render.render(use_viewport = True,write_still = True, animation = True) 
-    #shading
-    #bpy.context.scene.render.filepath = path+'shading\\'
-    #bpy.ops.render.render(use_viewport = True,write_still = True, animation = True) 
-
-    
-
-
-
-def extract_camera_params(frames):
-    camera_position = np.zeros((frames.shape[0],16))
+def extract_camera_params(frames,label_path_memory):
+    camera_position = np.zeros((frames.shape[0],15))
     row_name = frames
-    col_name = ['loc_x','loc_y','loc_z','rot_x','rot_y','rot_z',   'camera_latitude_min' ,'camera_latitude_max','camera_longitude_min','camera_longitude_max',  'px','py','exposure','gamma','longitude','latitude']
+    col_name = ['loc_x','loc_y','loc_z','rot_x','rot_y','rot_z',  'elevation','azimuth' ,  'camera_latitude_min' ,'camera_latitude_max','camera_longitude_min','camera_longitude_max',  'px','py','exposure']
+    
+    df = pd.read_csv(label_path_memory)
+    df = df[["Sun elevation" , "Sun azimuth"]]
+    
     
     for i in range(frames.shape[0]):
         
@@ -228,25 +280,26 @@ def extract_camera_params(frames):
         camera_position[i,4] =  math.degrees(bpy.context.object.rotation_euler[1])
         camera_position[i,5] =  math.degrees(bpy.context.object.rotation_euler[2])
         
+        # sun position
+        camera_position[i,6] = df.iloc[0,0]
+        camera_position[i,7] = df.iloc[0,1]
+        
         # camera intrinsic params
-        camera_position[i,6] = bpy.context.object.data.cycles.latitude_min
-        camera_position[i,7] = bpy.context.object.data.cycles.latitude_max
-        camera_position[i,8] = bpy.context.object.data.cycles.longitude_min
-        camera_position[i,9] = bpy.context.object.data.cycles.longitude_max
-        camera_position[i,10] = bpy.context.object.data.shift_x
-        camera_position[i,11] = bpy.context.object.data.shift_y
+        camera_position[i,8] = bpy.context.object.data.cycles.latitude_min
+        camera_position[i,9] = bpy.context.object.data.cycles.latitude_max
+        camera_position[i,10] = bpy.context.object.data.cycles.longitude_min
+        camera_position[i,11] = bpy.context.object.data.cycles.longitude_max
+        camera_position[i,12] = bpy.context.object.data.shift_x
+        camera_position[i,13] = bpy.context.object.data.shift_y
         
         
         # rendering setting
-        #camera_position[i,6] = math.degrees(bpy.context.object.data.cycles.fisheye_fov)
-        camera_position[i,12] = bpy.context.scene.view_settings.exposure
-        camera_position[i,13] = bpy.context.scene.view_settings.gamma
+        camera_position[i,14] = bpy.context.scene.view_settings.exposure
+
         
         
         
-        # sun position
-        camera_position[i,14] = bpy.context.scene.hdri_sa_props.long_deg
-        camera_position[i,15] = bpy.context.scene.hdri_sa_props.lat_deg
+        
 
     df = pd.DataFrame(camera_position, index = row_name , columns = col_name)    
     
@@ -255,17 +308,31 @@ def extract_camera_params(frames):
 
 def main(context):   # main 
     
+    
+    
+    """
+    camera location and animation should be set by user.
+    """
     #input_data = load_data("D:\\blend\\city1\\uploads_files_702403_BLEND\\BLEND\\data\\camera3_input.csv")
-    settings()
     #animation(input_data)  scale different , so  frames different
+
     
-    params = extract_camera_params(frames = np.array(list(i for i in range(bpy.context.scene.frame_end+1))))
-    save_data(params, path_name)
-    
-    compositing(path = path_name)
+    # initial setting
+    settings()
     
     
-    render_and_save(path = path_name,animation=False)
+    for ch_env in range(len(exr_path_memory)):
+        #environmentamp
+        environment_map(exr_path_memory[ch_env])
+
+    
+         #in camera animation , extract camera parameter and save it.
+        params = extract_camera_params(np.array(list(i for i in range(bpy.context.scene.frame_end+1))),label_path_memory[ch_env])
+        save_data(params, image_path_memory1[ch_env] ,image_path_memory2[ch_env] , exr_path_memory[ch_env])
+    
+        # composite intrinsic image and rendering and then save it.
+        compositing(image_path_memory2[ch_env])
+        render_and_save( animation =False)
     
 
     
