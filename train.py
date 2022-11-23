@@ -10,22 +10,21 @@ from torchvision import transforms
 
 # configs
 learning_rate = 1e-3
-batch_size = 35
+batch_size = 1
 start_epoch = 0
 num_epoch = 100
 loss_weight = 0.5
 
-data_dir = './datasets'
+data_dir = './sample_data'
 ckpt_dir = './checkpoint'
 log_dir  = './log'
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-mask = torch.Tensor(np.ones([batch_size, 3, 240, 320])).to(device)
 
 transform = transforms.Compose([transforms.ToTensor()])
 
-train_data = OutdoorIlluminationDataset(data_dir=os.path.join(data_dir, 'train'), transform=transform)
-val_data = OutdoorIlluminationDataset(data_dir=os.path.join(data_dir, 'val'), transform=transform)
+train_data = OutdoorIlluminationDataset(data_dir=os.path.join(data_dir), transform=transform)
+val_data = OutdoorIlluminationDataset(data_dir=os.path.join(data_dir), transform=transform)
 #test_data = OutdoorIlluminationDataset(data_dir=os.path.join(data_dir, 'test'), transform)
 
 train_loader = DataLoader(train_data, batch_size = batch_size, shuffle=True)
@@ -50,7 +49,7 @@ for epoch in range(start_epoch+1,num_epoch +1):
 
     for batch, data in enumerate(train_loader,1):
         inputs = data['input'].to(device)
-        #mask = data['mask'].to(device)
+        mask = data['mask'].to(device)
         gt_a = data['albedo'].to(device)
         gt_s = data['shading'].to(device)
         #gt_dis = data['distribution'].to(device)
