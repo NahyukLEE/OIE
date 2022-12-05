@@ -39,22 +39,23 @@ class OutdoorIlluminationDataset(Dataset):
 	
 
     def __getitem__(self, index):
-        inputs = np.asarray(Image.open(os.path.join(self.data_dir, 'original', self.lst_input[index])))
-        masks = np.asarray(Image.open(os.path.join(self.data_dir, 'environment', self.lst_mask[index])))
-        albedos = np.asarray(Image.open(os.path.join(self.data_dir, 'albedo', self.lst_albedo[index])))
-        shadings = np.asarray(Image.open(os.path.join(self.data_dir, 'shading', self.lst_shading[index])))
+        inputs = Image.open(os.path.join(self.data_dir, 'original', self.lst_input[index]))
+        masks = Image.open(os.path.join(self.data_dir, 'environment', self.lst_mask[index]))
+        albedos = Image.open(os.path.join(self.data_dir, 'albedo', self.lst_albedo[index]))
+        shadings = Image.open(os.path.join(self.data_dir, 'shading', self.lst_shading[index]))
         
-        inputs = (inputs/255.0).astype(np.float32)
-        masks = (masks/255.0).astype(np.float32)
-        albedos = (albedos/255.0).astype(np.float32)
-        shadings = (shadings/255.0).astype(np.float32)
+        #inputs = (inputs/255.0).astype(np.float32)
+        #masks = (masks/255.0).astype(np.float32)
+        #albedos = (albedos/255.0).astype(np.float32)
+        #shadings = (shadings/255.0).astype(np.float32)
 
         if self.transform:				
-            inputs = self.transform(inputs)
+            inputs = self.transform(inputs)#/255.0
             masks = self.transform(masks)
-            albedos = self.transform(albedos)
-            shadings = self.transform(shadings)
+            albedos = self.transform(albedos)#/255.0
+            shadings = self.transform(shadings)#/255.0
 
+        #print(masks.max(), masks.min())
         data = {'input':inputs, 
         'mask':masks, 
         'albedo':albedos, 
