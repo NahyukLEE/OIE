@@ -12,13 +12,9 @@ class OutdoorIlluminationDataset(Dataset):
         self.transform = transform
 
         lst_input = os.listdir(os.path.join(self.data_dir, 'original'))
-        lst_input.sort()
-        lst_mask = os.listdir(os.path.join(self.data_dir, 'environment'))
-        lst_mask.sort()
+        lst_mask = os.listdir(os.path.join(self.data_dir, 'environment')) # mask
         lst_albedo = os.listdir(os.path.join(self.data_dir, 'albedo'))
-        lst_albedo.sort()
         lst_shading = os.listdir(os.path.join(self.data_dir, 'shading'))
-        lst_shading.sort()
 
         lst_input.sort()
         lst_mask.sort()
@@ -31,10 +27,7 @@ class OutdoorIlluminationDataset(Dataset):
         self.lst_shading = lst_shading
 
     def __len__(self):
-        assert len(self.lst_input) == len(self.lst_mask)
-        assert len(self.lst_input) == len(self.lst_albedo)
-        assert len(self.lst_input) == len(self.lst_shading)
-        
+        assert len(self.lst_input) == len(self.lst_mask) == len(self.lst_albedo) == len(self.lst_shading)
         return len(self.lst_input)
 	
 
