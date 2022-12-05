@@ -22,7 +22,7 @@ wandb.init(entity="nahyuklee",
 learning_rate = 1e-3
 batch_size = 16
 start_epoch = 0
-num_epoch = 100
+num_epoch = 20
 
 data_dir = './fov_dataset'
 ckpt_dir = './checkpoint'
@@ -36,7 +36,7 @@ transform = transforms.Compose([transforms.Resize((240,320)),
 
 train_data = OutdoorIlluminationDataset(data_dir=os.path.join(data_dir, 'train'), transform=transform)
 val_data = OutdoorIlluminationDataset(data_dir=os.path.join(data_dir, 'val'), transform=transform)
-test_data = OutdoorIlluminationDataset(data_dir=os.path.join(data_dir, 'test'), transform)
+test_data = OutdoorIlluminationDataset(data_dir=os.path.join(data_dir, 'test'), transform=transform)
 
 train_loader = DataLoader(train_data, batch_size = batch_size, shuffle=True)
 val_loader = DataLoader(val_data, batch_size = batch_size, shuffle=True)
@@ -46,7 +46,8 @@ id_model = MultiOutputUNet().to(device)
 le_model = FCRegressor().to(device)
 
 optim = torch.optim.Adam(id_model.parameters(), lr = learning_rate) 
-
+scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer=optim,
+                                        lr_lambda=lambda epoch: 0.95 ** epoch)
 num_data_train = len(train_data)
 num_data_val = len(val_data)
 print('train data:', num_data_train)
@@ -98,8 +99,10 @@ for epoch in range(start_epoch+1,num_epoch +1):
                  'train albedo loss': al,
                  'train shading loss': sl,
                  'train recon. loss': rl,
+                 'learning rate': optim.param_groups[0]['lr'],
                  })
-        
+    
+    scheduler.step()
     print("TRAIN: EPOCH %04d / %04d | LOSS %.4f" %(epoch, num_epoch, np.mean(loss_arr)))
         
 
@@ -128,6 +131,12 @@ for epoch in range(start_epoch+1,num_epoch +1):
             loss = id_loss #combine_loss(id_loss, le_loss, 0.5)
 
             loss_arr += [loss.item()]
+
+            wandb.log({'valid intrinsic loss': id_loss,
+                            'valid albedo loss': al,
+                            'valid shading loss': sl,
+                            'valid recon. loss': rl,
+                            })
 
         print("VALID: EPOCH %04d / %04d | LOSS %.4f" %
                 (epoch, num_epoch, np.mean(loss_arr)))
