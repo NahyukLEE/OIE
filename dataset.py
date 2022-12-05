@@ -43,19 +43,13 @@ class OutdoorIlluminationDataset(Dataset):
         masks = Image.open(os.path.join(self.data_dir, 'environment', self.lst_mask[index]))
         albedos = Image.open(os.path.join(self.data_dir, 'albedo', self.lst_albedo[index]))
         shadings = Image.open(os.path.join(self.data_dir, 'shading', self.lst_shading[index]))
-        
-        #inputs = (inputs/255.0).astype(np.float32)
-        #masks = (masks/255.0).astype(np.float32)
-        #albedos = (albedos/255.0).astype(np.float32)
-        #shadings = (shadings/255.0).astype(np.float32)
 
         if self.transform:				
-            inputs = self.transform(inputs)#/255.0
+            inputs = self.transform(inputs)
             masks = self.transform(masks)
-            albedos = self.transform(albedos)#/255.0
-            shadings = self.transform(shadings)#/255.0
+            albedos = self.transform(albedos)
+            shadings = self.transform(shadings)
 
-        #print(masks.max(), masks.min())
         data = {'input':inputs, 
         'mask':masks, 
         'albedo':albedos, 

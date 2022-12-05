@@ -19,29 +19,28 @@ wandb.init(entity="nahyuklee",
         name= now.strftime('%Y-%m-%d %H:%M:%S'))
 
 # configs
-learning_rate = 1e-2
+learning_rate = 1e-3
 batch_size = 16
 start_epoch = 0
 num_epoch = 100
-loss_weight = 0.5
 
-data_dir = './sample_data'
+data_dir = './fov_dataset'
 ckpt_dir = './checkpoint'
 log_dir  = './log'
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-transform = transforms.Compose([transforms.Resize((320,240)),
+transform = transforms.Compose([transforms.Resize((240,320)),
                                 transforms.ToTensor(),
                                 ])
 
-train_data = OutdoorIlluminationDataset(data_dir=os.path.join(data_dir), transform=transform)
-val_data = OutdoorIlluminationDataset(data_dir=os.path.join(data_dir), transform=transform)
-#test_data = OutdoorIlluminationDataset(data_dir=os.path.join(data_dir, 'test'), transform)
+train_data = OutdoorIlluminationDataset(data_dir=os.path.join(data_dir, 'train'), transform=transform)
+val_data = OutdoorIlluminationDataset(data_dir=os.path.join(data_dir, 'val'), transform=transform)
+test_data = OutdoorIlluminationDataset(data_dir=os.path.join(data_dir, 'test'), transform)
 
 train_loader = DataLoader(train_data, batch_size = batch_size, shuffle=True)
 val_loader = DataLoader(val_data, batch_size = batch_size, shuffle=True)
-#test_loader = DataLoader(test_data, batch_size = batch_size, shuffle=False)
+test_loader = DataLoader(test_data, batch_size = batch_size, shuffle=False)
 
 id_model = MultiOutputUNet().to(device)
 le_model = FCRegressor().to(device)
@@ -101,8 +100,7 @@ for epoch in range(start_epoch+1,num_epoch +1):
                  'train recon. loss': rl,
                  })
         
-        print("TRAIN: EPOCH %04d / %04d | BATCH %04d / %04d | LOSS %.4f" %
-                  (epoch, num_epoch, batch, num_batch_train, np.mean(loss_arr)))
+    print("TRAIN: EPOCH %04d / %04d | LOSS %.4f" %(epoch, num_epoch, np.mean(loss_arr)))
         
 
     # validation
@@ -131,8 +129,8 @@ for epoch in range(start_epoch+1,num_epoch +1):
 
             loss_arr += [loss.item()]
 
-            print("VALID: EPOCH %04d / %04d | BATCH %04d / %04d | LOSS %.4f" %
-                  (epoch, num_epoch, batch, num_batch_val, np.mean(loss_arr)))
+        print("VALID: EPOCH %04d / %04d | LOSS %.4f" %
+                (epoch, num_epoch, np.mean(loss_arr)))
 
         # save model
         if epoch % 100 == 0:
