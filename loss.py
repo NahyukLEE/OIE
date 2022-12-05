@@ -4,50 +4,49 @@ import torch.nn as nn
 from torchmetrics.functional import image_gradients
 
 def recon_loss(mask, gt_i, pred_a, pred_s):
+    
     gt_i = mask * torch.log1p(gt_i) # hadamard product
-    pred_a = mask * torch.log1p(pred_a)
-    pred_s = mask * torch.log1p(pred_s)
+    recon = mask * torch.log1p(pred_a) * torch.log1p(pred_s)
     
     mse_loss = nn.MSELoss(reduction = 'mean')
-    loss = mse_loss(gt_i, (pred_a + pred_s))
+    loss = mse_loss(gt_i, recon)
     
     return loss
 
-def gradient_loss(mask, gt, output):
+def gradient_loss(mask, gt, pred):
     
-    gt = mask * torch.log1p(gt) # hadamard product
-    pred = mask * torch.log1p(output)
+    log_gt = torch.log1p(gt) # hadamard product
+    log_pred = torch.log1p(mask * pred)
 
-    gt_dy, gt_dx = image_gradients(gt)
-    pred_dy, pred_dx = image_gradients(output)
+    gt_dy, gt_dx = image_gradients(log_gt)
+    pred_dy, pred_dx = image_gradients(log_pred)
     
     l1_loss = nn.L1Loss(reduction = 'mean')
     loss = l1_loss(gt_dy, pred_dy) + l1_loss(gt_dx, pred_dx)
 
     return loss
 
-def scale_invariant_loss(mask, gt, output):
+def scale_invariant_loss(mask, gt, pred):
 
-    gt = mask * torch.log1p(gt) # hadamard product
-    pred = mask * torch.log1p(output)
+    log_gt = torch.log1p(gt) # hadamard product
+    log_pred = torch.log1p(mask * pred)
 
     mse_loss = nn.MSELoss(reduction = 'mean')
-    loss = mse_loss(gt, pred)
+    loss = mse_loss(log_gt, log_pred)
 
     return loss
 
 def intrinsic_loss(mask, pred_a, pred_s, gt_a, gt_s, gt_i):
 
-    alpha = 0.5
+    alpha = 0.2
     albedo_loss = alpha * gradient_loss(mask, gt_a, pred_a) + (1 - alpha) * scale_invariant_loss(mask, gt_a, pred_a)
     shading_loss = alpha * gradient_loss(mask, gt_s, pred_s) + (1 - alpha) * scale_invariant_loss(mask, gt_s, pred_s)
     reconstruction_loss = recon_loss(mask, gt_i, pred_a, pred_s)
     
-    w1 = 0.3 # weight for albedo loss
-    w2 = 0.3 # weight for shading loss
+    w1 = 0.4 # weight for albedo loss
+    w2 = 0.4 # weight for shading loss
     loss = w1 * albedo_loss +  w2 * shading_loss + (1-w1-w2) * reconstruction_loss
-
-    return loss
+    return (loss, albedo_loss, shading_loss, reconstruction_loss)
 
 def light_loss(pred_dis, pred_prrs, label_dis, label_prrs, beta=0.1):
     '''
