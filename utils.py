@@ -5,7 +5,9 @@ import os
 import sys
 import cv2
 import numpy as np
+from math import *
 
+# https://github.com/fuenwang/Equirec2Perspec/blob/master/Equirec2Perspec.py
 def xyz2lonlat(xyz):
     atan2 = np.arctan2
     asin = np.arcsin
@@ -74,11 +76,35 @@ class Equirectangular:
         persp = cv2.remap(self._img, XY[..., 0], XY[..., 1], cv2.INTER_CUBIC, borderMode=cv2.BORDER_WRAP)
 
         return persp
-    
-def save(ckpt_dir,model,optim,epoch):
+
+def sphere2world(theta, phi):
+    x = cos(radians(phi)) * sin(radians(theta))
+    y = sin(radians(phi))
+    z = cos(radians(phi)) * cos(radians(theta))
+    return np.asarray([x, y, z])
+
+def bin2Sphere(i):
+    phi = (floor(i/32)) * (90/8.0) + (90/16.0)
+    theta = ((i+1) - floor(i/32) * 32 - 1) * (360.0/32.0) + (360.0/64.0) - 180.0
+    return np.array([theta, phi])
+
+def vMF(SP, kappa=80.0):	
+	'''
+		discrete the sky into 256 bins and model the sky probability distirbution. (von Mises-Fisher)
+	'''
+	sp_vec = sphere2world(SP[0], SP[1])
+	pdf = np.zeros(256)
+	for i in range(256):
+		sp = bin2Sphere(i)
+		vec = sphere2world(sp[0], sp[1])
+		pdf[i] = exp(np.dot(vec, sp_vec) * kappa)
+	return pdf/np.sum(pdf)
+
+def save(ckpt_dir,model,optim,epoch,id):
     if not os.path.exists(ckpt_dir):
         os.makedirs(ckpt_dir)
 
-    torch.save({'model':model.state_dict(),'optim':optim.state_dict()},'%s/model_epoch%d.pth'%(ckpt_dir,epoch))
+    torch.save({'epoch': epoch,
+                'model':model.state_dict(),
+                'optim':optim.state_dict()},'%s/%smodel_epoch%d.pth'%(ckpt_dir,id,epoch))
 
-    
