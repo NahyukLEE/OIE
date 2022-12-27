@@ -45,22 +45,35 @@ def intrinsic_loss(mask, pred_a, pred_s, gt_a, gt_s, gt_i):
     
     w1 = 0.4 # weight for albedo loss
     w2 = 0.4 # weight for shading loss
-    loss = w1 * albedo_loss +  w2 * shading_loss + (1-w1-w2) * reconstruction_loss
+    w3 = 0.2 # weight for reconstruction loss
+    loss = (w1 * albedo_loss +  w2 * shading_loss + w3 * reconstruction_loss)
     return (loss, albedo_loss, shading_loss, reconstruction_loss)
 
-def light_loss(pred_dis, pred_prrs, label_dis, label_prrs, beta=0.1):
+def intrinsic_loss_only(mask, pred_a, gt_a, gt_i):
+    '''
+    Implementation for ablation study
+    '''
+    alpha = 0.2
+    albedo_loss = alpha * gradient_loss(mask, gt_a, pred_a) + (1 - alpha) * scale_invariant_loss(mask, gt_a, pred_a)
+     
+    loss = albedo_loss
+    return (loss, albedo_loss)
+
+
+def light_loss(pred_dis, label_dis, beta=0.1):
     '''
     Implementation heavily borrowed from 
     - https://github.com/PeterZhouSZ/dashcam-illumination-estimation
 
     '''
-    sun_crit = nn.KLDivLoss()
+    sun_crit = nn.KLDivLoss(reduction='batchmean')
     prr_crit = nn.MSELoss()
+    sun_loss = sun_crit(pred_dis, label_dis)
     
-    sun_loss, prr_loss = sun_crit(pred_dis, label_dis), prr_crit(pred_prrs, label_prrs)
-    loss = sun_loss + beta * prr_loss
+    #prr_loss = prr_crit(pred_prrs, label_prrs)
+    #loss = sun_loss + beta * prr_loss
 
-    return loss
+    return sun_loss #loss
 
 def combine_loss(id_loss, le_loss, alpha=0.5):
-    return id_loss + alpha * le_loss
+    return id_loss + le_loss
